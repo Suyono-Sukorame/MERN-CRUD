@@ -1,0 +1,488 @@
+MERN-Fullstack
+
+mkdir MERN-Fullstack
+cd MERN-Fullstack
+mkdir backend
+cd backend
+
+$ npm init -y
+$ npm install express
+$ npm install mongoose
+$ npm install cors
+$ npm i -g nodemon
+
+// backend/package.json
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module", // menambahkan
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",  // menambahkan
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.0"
+  }
+}
+
+---
+
+$ cd backend
+$ nodemon index.js
+
+
+
+cd ../frontend
+$ npx create-react-app frontend
+$ npm i react-router-dom axios bulma
+
+hapus file src/App.css, App.test.js. index.css, logo.svg, reportWebVitals.js dan setupTests.js.
+
+$ npm start
+
+$ cd../frontend
+cd src
+mkdir components/UserList.js
+
+untuk membuat format react {rafce}
+
+insert
+import "bulma/css/bulma.css"; {// MERN-Fullstack/frontend/src/index.js}
+
+----
+// MERN-Fullstack/frontend/src/commponents/AddUser.js
+
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+const AddUser = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [gender, setGender] = useState("");
+  const navigate = useNavigate();
+
+  const saveUser = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:5000/users", {
+        name,
+        email,
+        gender,
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Error saving user:", error);
+    }
+  };
+
+  return (
+    <div className="columns mt-5">
+      <div className="column is-half">
+        <form onSubmit={saveUser}>
+          <div className="field">
+            <label className="label">Name</label>
+            <div className="control">
+              <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="label">Email</label>
+            <div className="control">
+              <input className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="label">Gender</label>
+            <div className="control">
+              <div className="select">
+                <select value={gender} onChange={(e) => setGender(e.target.value)} required>
+                  <option value="" disabled>
+                    Select Gender
+                  </option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="control">
+              <button className="button is-primary" type="submit">
+                Save
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AddUser;
+
+
+----
+// MERN-Fullstack/frontend/src/commponents/EditUser.js
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
+
+const EditUser = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [gender, setGender] = useState("");
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  useEffect(() => {
+    const getUserById = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/users/${id}`);
+        setName(response.data.name);
+        setEmail(response.data.email);
+        setGender(response.data.gender);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    getUserById();
+  }, [id]); // Include 'id' in the dependency array
+
+  const updateUser = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`http://localhost:5000/users/${id}`, {
+        name,
+        email,
+        gender,
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
+
+  return (
+    <div className="columns mt-5">
+      <div className="column is-half">
+        <form onSubmit={updateUser}>
+          <div className="field">
+            <label className="label">Name</label>
+            <div className="control">
+              <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="label">Email</label>
+            <div className="control">
+              <input className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="label">Gender</label>
+            <div className="control">
+              <div className="select">
+                <select value={gender} onChange={(e) => setGender(e.target.value)} required>
+                  <option value="" disabled>
+                    Select Gender
+                  </option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="control">
+              <button className="button is-primary" type="submit">
+                Update
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default EditUser;
+
+----
+// MERN-Fullstack/frontend/src/commponents/UserList.js
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+
+const UserList = () => {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  const getUsers = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/users");
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  const deleteUser = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/users/${id}`);
+      setUsers(users.filter((user) => user._id !== id));
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
+
+  return (
+    <div className="columns">
+      <div className="column is-half mt-5">
+        <Link to="add" className="button is-success">
+          Add New
+        </Link>
+        <table className="table is-striped is-fullwidth mt-5">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Gender</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user, index) => (
+              <tr key={user._id}>
+                <td>{index + 1}</td>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>{user.gender}</td>
+                <td>
+                  <div className="buttons">
+                    <Link to={`edit/${user._id}`} className="button is-info is-small">
+                      Edit
+                    </Link>
+                    <button className="button is-danger is-small" onClick={() => deleteUser(user._id)}>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default UserList;
+
+----
+// MERN-Fullstack/frondend/src/App.js
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import UserList from "./components/UserList";
+import AddUser from "./components/AddUser";
+import EditUser from "./components/EditUser";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <div className="container">
+        <Routes>
+          <Route path="/" element={<UserList />} />
+          <Route path="add" element={<AddUser />} />
+          <Route path="edit/:id" element={<EditUser />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+
+
+----
+// MERN-Fullstack/frondend/src/index.js
+
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "bulma/css/bulma.css";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+----
+// MERN-Fullstack/backend/controllers/UserControllers.js
+import User from "../models/UserModel.js";
+
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getUsersById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const saveUser = async (req, res) => {
+  const user = new User(req.body);
+  try {
+    const insertedUser = await user.save();
+    res.status(201).json(insertedUser);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+----
+// MERN-Fullstack/backend/models/UserModel.js
+
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    gender: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
+
+const User = mongoose.model("User", userSchema);
+export default User;
+
+
+----
+// MERN-Fullstack/backend/routes/UserRoute.js
+import express from "express";
+import { getUsers, getUsersById, saveUser, updateUser, deleteUser } from "../controllers/UserController.js";
+
+const router = express.Router();
+
+router.get("/users", getUsers);
+router.get("/users/:id", getUsersById);
+router.post("/users", saveUser);
+router.put("/users/:id", updateUser);
+router.patch("/users/:id", updateUser);
+router.delete("/users/:id", deleteUser);
+
+export default router;
+
+
+----
+// MERN-Fullstack/backend/index.js
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import UserRoute from "./routes/UserRoute.js";
+
+const app = express();
+mongoose.connect("mongodb://localhost:27017/MERN-Fullstack", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+db.on("error", (error) => console.error(error));
+db.once("open", () => console.log("Connected to MongoDB"));
+
+app.use(cors());
+app.use(express.json());
+app.use(UserRoute);
+
+app.listen(5000, () => console.log("Server is running on port 5000"));
+
+
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

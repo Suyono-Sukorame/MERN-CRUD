@@ -1,0 +1,31 @@
+GET http://localhost:5000/users
+
+###
+
+GET http://localhost:5000/users/6690fd5bd2ffa4a042ef440f
+
+###
+
+POST http://localhost:5000/users
+Content-Type: application/json
+
+{
+    "name": "Hakim",
+    "email": "hakim@gmail.com",
+    "gender": "Male"
+}
+
+###
+
+PATCH http://localhost:5000/users/6690cb5df295550229969a2a
+Content-Type: application/json
+
+{
+    "name": "Maryam",
+    "email": "maryam@gmail.com",
+    "gender": "Female"
+}
+
+###
+
+DELETE http://localhost:5000/users/6690cafbf295550229969a27
